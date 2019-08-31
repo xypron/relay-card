@@ -1,0 +1,40 @@
+.TH RELAY-CARD 1 "August 30th, 2019" "version 0.1" "Control Waveshare Relay Board on Raspberry Pi 3B+"
+.SH NAME
+relay-card \- control Waveshare RPi Relay Board on Raspberry Pi 3B+
+.SH SYNOPSIS
+.B relay-card
+.RB [ export | flash | on | off | reset | status | unexport ]
+.RB [ 1 | 2 | 3 ]
+.SH DESCRIPTION
+The command relay-card is used to control the
+Waveshare RPi Relay Board
+on a Raspberry Pi 3B+.
+The GPIOs controling the relay board are enabled by the relay-card systemd
+service.
+.PP
+To use the relay-card command you must be member of the group piwsrb.
+.TP
+.B export
+makes the GPIOs available (requires root access).
+This option is used by the systemd service.
+.TP
+.B flash
+switches relay on for 1 second and off again.
+.TP
+.B on
+switches relay on.
+.TP
+.B off
+switches relay off.
+.TP
+.B reset
+switches relay off for 3 seconds and on again.
+.TP
+.B status
+displays the status of the 3 relays.
+.TP
+.B unexport
+makes the GPIOs unavailable (requires root access).
+This option is used by the systemd service.
+.SH AUTHOR
+Heinrich Schuchardt <xypron.glpk@gmx.de>

@@ -1,0 +1,2 @@
+#/usr/bin/env bash
+complete -W "export flash off on reset status unexport" relay-card

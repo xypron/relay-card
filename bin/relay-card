@@ -1,0 +1,101 @@
+#!/bin/sh
+# SPDX-License-Identifier: BSD-2-Clause
+#
+# Copyright 2019 Heinrich Schuchardt <xypron.glpk@gmx.de>
+
+set -e
+
+grep 'Raspberry Pi 3 Model B+' /proc/device-tree/model > /dev/null ||
+grep 'Raspberry Pi 3 Model B Plus' /proc/device-tree/model \
+> /dev/null || (echo 'Unsupported device' && false)
+
+export_gpio() {	
+	for i in 484 478 479
+	do
+		echo $i > /sys/class/gpio/export || true
+		echo 1 > /sys/class/gpio/gpio$i/active_low
+		echo out > /sys/class/gpio/gpio$i/direction
+		echo 0 > /sys/class/gpio/gpio$i/value
+		chown root:piwsrb /sys/class/gpio/gpio$i/value
+		chmod 664 /sys/class/gpio/gpio$i/value
+	done
+}
+
+unexport_gpio() {	
+	for i in 484 478 479
+	do
+		echo $i > /sys/class/gpio/unexport
+	done
+}
+
+status_gpio() {
+	n=1
+	for i in 484 478 479
+	do
+		echo -n "Relay $n: "
+		cat /sys/class/gpio/gpio$i/value
+		n=$((n+1))
+	done
+}
+
+usage() {
+	echo "Control Waveshare RPi Relay Board"
+	echo "Usage:"
+	echo "relay-card export        - enable GPIOs"
+	echo "relay-card unexport      - disable GPIOs"
+	echo "relay-card off [1|2|3]   - switch relay off"
+	echo "relay-card on [1|2|3]    - switch relay on"
+	echo "relay-card flash [1|2|3] - switch relay on for 1 second"
+	echo "relay-card reset [1|2|3] - switch relay off for 3 seconds"
+	echo "relay-card status        - display relay status"
+}
+
+main() {
+	case "$2" in
+	2)
+		port=478
+		;;
+	3)
+		port=479
+		;;
+	*)
+		port=484
+		;;
+	esac
+
+	case "$1" in
+	export)
+		export_gpio
+		;;
+	unexport)
+		unexport_gpio
+		;;
+	on)
+		echo 1 > /sys/class/gpio/gpio$port/value
+		;;
+	off)
+		echo 0 > /sys/class/gpio/gpio$port/value
+		;;
+	flash)
+		# Toggle relay on and off
+		echo 1 > /sys/class/gpio/gpio$port/value
+		sleep 1
+		echo 0 > /sys/class/gpio/gpio$port/value
+		;;
+	reset)
+		# Toggle relay off and on
+		echo 0 > /sys/class/gpio/gpio$port/value
+		sleep 3
+		echo 1 > /sys/class/gpio/gpio$port/value
+		;;
+	status)
+		status_gpio
+		;;
+	*)
+		usage
+		exit 1;
+		;;
+	esac
+}
+
+main "$@"

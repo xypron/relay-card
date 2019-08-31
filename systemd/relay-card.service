@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: BSD-2-Clause
+#
+# Copyright 2019 Heinrich Schuchardt <xypron.glpk@gmx.de>
+
+[Unit]
+Description=Waveshare RPi Relay/Expansion Board
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/relay-card export
+RemainAfterExit=true
+
+ExecStop=/usr/bin/relay-card unexport
+
+[Install]
+WantedBy=multi-user.target
