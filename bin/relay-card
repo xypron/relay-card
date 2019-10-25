@@ -5,12 +5,16 @@
 
 set -e
 
+CH1=484
+CH2=478
+CH3=479
+
 grep 'Raspberry Pi 3 Model B+' /proc/device-tree/model > /dev/null ||
 grep 'Raspberry Pi 3 Model B Plus' /proc/device-tree/model \
 > /dev/null || (echo 'Unsupported device' && false)
 
 export_gpio() {	
-	for i in 484 478 479
+	for i in $CH1 $CH2 $CH3
 	do
 		echo $i > /sys/class/gpio/export || true
 		echo 1 > /sys/class/gpio/gpio$i/active_low
@@ -22,7 +26,7 @@ export_gpio() {
 }
 
 unexport_gpio() {	
-	for i in 484 478 479
+	for i in $CH1 $CH2 $CH3
 	do
 		echo $i > /sys/class/gpio/unexport
 	done
@@ -30,7 +34,7 @@ unexport_gpio() {
 
 status_gpio() {
 	n=1
-	for i in 484 478 479
+	for i in $CH1 $CH2 $CH3
 	do
 		echo -n "Relay $n: "
 		cat /sys/class/gpio/gpio$i/value
@@ -53,13 +57,13 @@ usage() {
 main() {
 	case "$2" in
 	2)
-		port=478
+		port=$CH2
 		;;
 	3)
-		port=479
+		port=$CH3
 		;;
 	*)
-		port=484
+		port=$CH1
 		;;
 	esac
 
