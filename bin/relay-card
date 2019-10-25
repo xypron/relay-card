@@ -5,12 +5,11 @@
 
 set -e
 
-CH1=484
-CH2=478
-CH3=479
+CH1=26
+CH2=20
+CH3=21
 
-grep 'Raspberry Pi 3 Model B+' /proc/device-tree/model > /dev/null ||
-grep 'Raspberry Pi 3 Model B Plus' /proc/device-tree/model \
+grep 'Raspberry Pi 4 Model B Rev 1.1' /proc/device-tree/model \
 > /dev/null || (echo 'Unsupported device' && false)
 
 export_gpio() {	
