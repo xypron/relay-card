@@ -28,7 +28,7 @@ To switch relay 2 off:
 
     relay-card off 2
 
-To switch relay 2 on for 1 seconds and off again
+To switch relay 2 on for 1 second and off again
 
     relay-card flash 2
 
