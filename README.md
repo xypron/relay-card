@@ -8,6 +8,8 @@ to control the relays from the command line via GPIO.
 The GPIO numbers are specific for the Raspberry Pi 4B and Raspbian.
 **Do not use on other Raspberry Pis.**
 
+Users in group piwsrb can use the relay-card command.
+
 Installation
 ------------
 
