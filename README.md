@@ -1,11 +1,11 @@
-Control Waveshare Relay Board on Raspberry Pi 3B+
-=================================================
+Control Waveshare Relay Board on Raspberry Pi 3B+ and 4B
+========================================================
 
 The Waveshare Relay Board is a card that can be installed on top of the
-Raspberry Pi 3B+. It offers three relays. This project delivers a script
+Raspberry Pi. It offers three relays. This project delivers a script
 to control the relays from the command line via GPIO.
 
-The GPIO numbers are specific for the Raspberry Pi 3B+.
+The GPIO numbers are specific for the Raspberry Pi model.
 **Do not use on other Raspberry Pis.**
 
 Users in group piwsrb can use the relay-card command.
