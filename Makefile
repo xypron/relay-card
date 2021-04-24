@@ -3,6 +3,7 @@ all:
 check:
 
 install:
+	groupadd -rf piwsrb
 	mkdir -p $(DESTDIR)/usr/bin/
 	cp bin/relay-card $(DESTDIR)/usr/bin/
 	mkdir -p $(DESTDIR)/usr/share/man/man1/
