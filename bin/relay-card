@@ -1,104 +1,99 @@
-#!/bin/sh
-# SPDX-License-Identifier: BSD-2-Clause
-#
-# Copyright 2019 Heinrich Schuchardt <xypron.glpk@gmx.de>
+#!/usr/bin/python3
 
-set -e
+"""Control Waveshare Relaycard
+SPDX-License-Identifier: BSD-2-Clause
+Copyright 2019 Heinrich Schuchardt <xypron.glpk@gmx.de>
+"""
 
-CH1=26
-CH2=20
-CH3=21
+import sys
+import time
+import lgpio
 
-grep 'Raspberry Pi 4 Model B Rev 1\.' /proc/device-tree/model \
-> /dev/null || (echo 'Unsupported device' && false)
+ACTIVE_LOW = 2
+relays = {
+        '1' : 26,
+        '2' : 20,
+        '3' : 21
+    }
 
-export_gpio() {	
-	for i in $CH1 $CH2 $CH3
-	do
-		echo $i > /sys/class/gpio/export || true
-		echo 1 > /sys/class/gpio/gpio$i/active_low
-		echo out > /sys/class/gpio/gpio$i/direction
-		echo 0 > /sys/class/gpio/gpio$i/value
-		chown root:piwsrb /sys/class/gpio/gpio$i/value
-		chmod 664 /sys/class/gpio/gpio$i/value
-	done
-}
+def usage():
+    """Print usage instruction"""
+    print('Control Waveshare RPi Relay Board')
+    print('Usage:')
+    print('init                     - initialize relay card')
+    print('relay-card off [1|2|3]   - switch relay off')
+    print('relay-card on [1|2|3]    - switch relay on')
+    print('relay-card flash [1|2|3] - switch relay on for 1 second')
+    print('relay-card reset [1|2|3] - switch relay off for 3 seconds')
+    sys.exit(1)
 
-unexport_gpio() {	
-	for i in $CH1 $CH2 $CH3
-	do
-		echo $i > /sys/class/gpio/unexport
-	done
-}
+def init():
+    """Switch the relevant GPIOs to output and switch the relays off"""
+    ctx = lgpio.gpiochip_open(0)
+    for _, gpio in relays.items():
+        try:
+            lgpio.gpio_claim_output(ctx, gpio)
+            lgpio.gpio_write(ctx, gpio, 1)
+        except lgpio.error as exception:
+            print(exception)
+            sys.exit(1)
 
-status_gpio() {
-	n=1
-	for i in $CH1 $CH2 $CH3
-	do
-		echo -n "Relay $n: "
-		cat /sys/class/gpio/gpio$i/value
-		n=$((n+1))
-	done
-}
+def off(gpio):
+    """Switch a relay off"""
+    ctx = lgpio.gpiochip_open(0)
+    lgpio.gpio_claim_output(ctx, gpio)
+    lgpio.gpio_write(ctx, gpio, 1)
 
-usage() {
-	echo "Control Waveshare RPi Relay Board"
-	echo "Usage:"
-	echo "relay-card export        - enable GPIOs"
-	echo "relay-card unexport      - disable GPIOs"
-	echo "relay-card off [1|2|3]   - switch relay off"
-	echo "relay-card on [1|2|3]    - switch relay on"
-	echo "relay-card flash [1|2|3] - switch relay on for 1 second"
-	echo "relay-card reset [1|2|3] - switch relay off for 3 seconds"
-	echo "relay-card status        - display relay status"
-}
+def on(gpio):
+    """Switch a relay on"""
+    ctx = lgpio.gpiochip_open(0)
+    lgpio.gpio_claim_output(ctx, gpio)
+    lgpio.gpio_write(ctx, gpio, 0)
 
-main() {
-	case "$2" in
-	2)
-		port=$CH2
-		;;
-	3)
-		port=$CH3
-		;;
-	*)
-		port=$CH1
-		;;
-	esac
+def flash(gpio):
+    """witch a relay on for 1 second"""
+    ctx = lgpio.gpiochip_open(0)
+    lgpio.gpio_claim_output(ctx, gpio)
+    lgpio.gpio_write(ctx, gpio, 0)
+    time.sleep(1)
+    lgpio.gpio_write(ctx, gpio, 1)
 
-	case "$1" in
-	export)
-		export_gpio
-		;;
-	unexport)
-		unexport_gpio
-		;;
-	on)
-		echo 1 > /sys/class/gpio/gpio$port/value
-		;;
-	off)
-		echo 0 > /sys/class/gpio/gpio$port/value
-		;;
-	flash)
-		# Toggle relay on and off
-		echo 1 > /sys/class/gpio/gpio$port/value
-		sleep 1
-		echo 0 > /sys/class/gpio/gpio$port/value
-		;;
-	reset)
-		# Toggle relay off and on
-		echo 0 > /sys/class/gpio/gpio$port/value
-		sleep 3
-		echo 1 > /sys/class/gpio/gpio$port/value
-		;;
-	status)
-		status_gpio
-		;;
-	*)
-		usage
-		exit 1;
-		;;
-	esac
-}
+def reset(gpio):
+    """Switch a relay off for 3 seconds"""
+    ctx = lgpio.gpiochip_open(0)
+    lgpio.gpio_claim_output(ctx, gpio)
+    lgpio.gpio_write(ctx, gpio, 1)
+    time.sleep(3)
+    lgpio.gpio_write(ctx, gpio, 0)
 
-main "$@"
+def main():
+    """Command line entry point"""
+    argc = len(sys.argv)
+    if argc < 2 or argc > 3:
+        usage()
+
+    cmd = sys.argv[1]
+
+    if argc == 3:
+        try:
+            gpio = relays[sys.argv[2]]
+        except KeyError:
+            usage()
+    else:
+        gpio = relays['1']
+
+    if cmd == 'off':
+        off(gpio)
+    elif cmd == 'on':
+        on(gpio)
+    elif cmd == 'flash':
+        flash(gpio)
+    elif cmd == 'init':
+        init()
+    elif cmd == 'reset':
+        reset(gpio)
+    else:
+        usage()
+
+if __name__ == "__main__":
+    main()
