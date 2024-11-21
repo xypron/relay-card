@@ -7,18 +7,14 @@ set -e
 
 if \
 grep 'Raspberry Pi 3 Model B+' /proc/device-tree/model > /dev/null || \
-grep 'Raspberry Pi 3 Model B Plus' /proc/device-tree/model > /dev/null; then
-
-CH1=484
-CH2=478
-CH3=479
-
-elif \
+grep 'Raspberry Pi 3 Model B Plus' /proc/device-tree/model > /dev/null || \
 grep 'Raspberry Pi 4 Model B Rev 1\.' /proc/device-tree/model > /dev/null; then
 
-CH1=26
-CH2=20
-CH3=21
+BASE=$(cat /sys/devices/platform/soc/*.gpio/gpio/gpiochip*/base)
+
+CH1=$(( $BASE + 26 ))
+CH2=$(( $BASE + 20 ))
+CH3=$(( $BASE + 21 ))
 
 else
 echo 'Unsupported device' && false;
